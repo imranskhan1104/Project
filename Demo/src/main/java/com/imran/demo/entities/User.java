@@ -18,8 +18,11 @@ public class User {
     private int id;
 
     @Column(name = "user_name", nullable = false, length = 100)
-    private String name;
+    private String userName;
+    private String firstName;
+    private String lastName;
     private String email;
     private String password;
-    private String about;
+    private String phone;
+    private String userStatus;
 }
