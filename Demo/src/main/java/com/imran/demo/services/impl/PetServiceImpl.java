@@ -43,7 +43,7 @@ public class PetServiceImpl implements PetService {
     public PetDto petToDto(Pet pet)
     {
         PetDto petDto=new PetDto();
-        petDto.setId(pet.getId());
+//        petDto.setId(pet.getId());
         petDto.setCategory(pet.getCategory());
         petDto.setName(pet.getName());
         petDto.setPhotoUrls(pet.getPhotoUrls());

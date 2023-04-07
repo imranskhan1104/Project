@@ -3,7 +3,7 @@ info:
   version: "1.0.0"
   title: "My API"
 paths:
-  /pets:
+  /java/com/imran/demo/controllers/PetController:
     post:
       summary: "Create a new pet"
       operationId: "createPet"
