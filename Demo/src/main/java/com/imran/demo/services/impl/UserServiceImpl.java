@@ -42,11 +42,11 @@ public class UserServiceImpl implements UserService {
         return userDto1;
     }
 
-//    @Override
-//    public UserDto getUserById(Integer userId) {
-//        User user = this.userRepo.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User", " Id ", userId));
-//        return this.userToDto(user);
-//    }
+    @Override
+    public UserDto getUserByUserName(String userName) {
+        User user = this.userRepo.findByUserName(userName);
+        return this.userToDto(user);
+    }
 //
 //    @Override
 //    public List<UserDto> getAllUsers() {
@@ -59,7 +59,6 @@ public class UserServiceImpl implements UserService {
 //    }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRED, readOnly = false, rollbackFor = Throwable.class )
     public void deleteUser(String userName) {
 
         this.userRepo.deleteByUsername(userName);
