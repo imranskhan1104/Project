@@ -16,7 +16,7 @@ import java.util.List;
 public class Pet {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+//    @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
 
 
@@ -37,6 +37,9 @@ public class Pet {
             inverseJoinColumns ={@JoinColumn(name = "tid")})
     private List<Tag> tags;
 
+//    @OneToOne(cascade = CascadeType.ALL)
+//    @JoinColumn(name = "image_id", referencedColumnName = "id")
+//    private PetImages image;
 
     private String status;
 
