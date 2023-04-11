@@ -1,17 +1,13 @@
 package com.imran.demo.services.impl;
 
 import com.imran.demo.entities.User;
-import com.imran.demo.exception.ResourceNotFoundException;
 import com.imran.demo.payloads.UserDto;
 import com.imran.demo.repositories.UserRepo;
 import com.imran.demo.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -47,23 +43,47 @@ public class UserServiceImpl implements UserService {
         User user = this.userRepo.findByUserName(userName);
         return this.userToDto(user);
     }
-//
-//    @Override
-//    public List<UserDto> getAllUsers() {
-//
-//        List<User> users = this.userRepo.findAll();
-//
-//        List<UserDto> userDtos = users.stream().map(user -> this.userToDto(user)).collect(Collectors.toList());
-//
-//        return userDtos;
-//    }
+
+    @Override
+    public boolean createUserByArray(UserDto[] userDto) {
+        try {
+            for (UserDto a : userDto) {
+                User user = this.dtoToUser(a);
+                this.userRepo.save(user);
+            }
+            return true;
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean createUserByList(List<UserDto> listOfUser) {
+        try {
+            for (UserDto a : listOfUser) {
+                User user = this.dtoToUser(a);
+                this.userRepo.save(user);
+            }
+            return true;
+        }
+        catch(Exception e)
+        {
+            return false;
+        }
+    }
+
 
     @Override
     public void deleteUser(String userName) {
 
         this.userRepo.deleteByUsername(userName);
-//        this.userRepo.delete(user);
     }
+
+
+
+
 
     public User dtoToUser(UserDto userDto) {
         User user = new User();

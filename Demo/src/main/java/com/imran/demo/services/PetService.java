@@ -17,5 +17,6 @@ public interface PetService {
 
     void deletePet(Integer petId);
 
-//    void uploadImage(MultipartFile file, Integer petId) throws IOException;
+   void uploadImage(MultipartFile file, Integer petId) throws IOException;
+//   PetDto getPetByStatus(String status);
 }

@@ -1,8 +1,12 @@
 package com.imran.demo.controllers;
 
 import com.imran.demo.entities.Pet;
+import com.imran.demo.entities.PetImages;
 import com.imran.demo.payloads.PetDto;
 import com.imran.demo.payloads.UserDto;
+import com.imran.demo.repositories.PetImageRepo;
+import com.imran.demo.repositories.PetRepo;
+//import com.imran.demo.repositories.PetStatusEnum;
 import com.imran.demo.response.ApiResponse;
 import com.imran.demo.services.PetService;
 import com.imran.demo.services.UserService;
@@ -10,11 +14,13 @@ import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Optional;
 
 
 @RestController
@@ -23,6 +29,9 @@ public class PetController {
 
     @Autowired
     private PetService petService;
+
+    @Autowired
+    private PetRepo petRepo;
 
     @PostMapping("/")
     public ResponseEntity<PetDto> addPet(@RequestBody PetDto petDto) {
@@ -56,9 +65,24 @@ public class PetController {
     }
 
 
-//    @PostMapping("{/{petId}/uploadImage")
-//        public ResponseEntity<ApiResponse> uploadImage(@PathVariable("petId") Integer petId, @RequestParam("uploadImage")MultipartFile file) throws IOException {
-//            this.petService.uploadImage(file,petId);
-//            return new ResponseEntity<ApiResponse>(new ApiResponse("Pet Image Uploaded Successfully",true), HttpStatus.OK);
-//        }
-}
+    @RequestMapping(path = "/{petId}/uploadImage", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse> uploadImage(@PathVariable("petId") Integer petId, @RequestPart("uploadImage")MultipartFile file) throws IOException {
+    Optional<Pet> pet=this.petRepo.findById(petId);
+
+    if (pet.isPresent()) {
+        this.petService.uploadImage(file, petId);
+        return new ResponseEntity<ApiResponse>(new ApiResponse("Pet Image Uploaded Successfully", true), HttpStatus.OK);
+    }
+    else {
+        return new ResponseEntity<ApiResponse>(new ApiResponse("Failed to upload", false), HttpStatus.BAD_REQUEST);
+    }
+    }
+
+
+//    @GetMapping("/{status}")
+//    public ResponseEntity<PetDto> getPetByStatus(@PathVariable("status") PetStatusEnum petStatusEnum) {
+//
+//        PetDto getPetbyStatus = this.petService.getPetByStatus(String.valueOf(petStatusEnum));
+//        return ResponseEntity.ok(getPetbyStatus);
+    }
+//}

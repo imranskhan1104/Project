@@ -3,7 +3,7 @@ package com.imran.demo.services.impl;
 import com.imran.demo.entities.*;
 import com.imran.demo.exception.ResourceNotFoundException;
 import com.imran.demo.payloads.PetDto;
-//import com.imran.demo.repositories.PetImageRepo;
+import com.imran.demo.repositories.PetImageRepo;
 import com.imran.demo.repositories.PetRepo;
 import com.imran.demo.services.PetService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +20,8 @@ public class PetServiceImpl implements PetService {
     @Autowired
     private PetRepo petRepo;
 
-//    @Autowired
-//    private PetImageRepo petImageRepo;
+    @Autowired
+    private PetImageRepo petImageRepo;
 
 
 
@@ -66,13 +66,19 @@ public class PetServiceImpl implements PetService {
         this.petRepo.delete(pet);
     }
 
+    @Override
+    public void uploadImage(MultipartFile file, Integer petId) throws IOException {
+        PetImages pet=new PetImages();
+        pet.setImage(file.getBytes());
+        pet.setId(petId);
+        pet.setName(file.getOriginalFilename());
+        this.petImageRepo.save(pet);
+    }
+
 //    @Override
-//    public void uploadImage(MultipartFile file, Integer petId) throws IOException {
-//        PetImageRepo pet=this.petImageRepo.findById(petId).orElseThrow(()-> new ResourceNotFoundException("Pet"," id ",petId));
-//        PetImages petImages=new PetImages();
-//        petImages.setImage(file.getBytes());
-//        petImages.setName(file.getOriginalFilename());
-//        this.petImageRepo.save(pet);
+//    public PetDto getPetByStatus(String status) {
+//        User user = this.petRepo.findByStatus(userName);
+//        return this.userToDto(user)
 //    }
 
 
