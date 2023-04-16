@@ -4,7 +4,6 @@ package com.imran.demo.entities;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import javax.persistence.*;
 import java.util.List;
 
@@ -16,9 +15,8 @@ import java.util.List;
 public class Pet {
 
     @Id
-//    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
-
 
     @ManyToOne(fetch = FetchType.LAZY,cascade=CascadeType.ALL)
     @JoinColumn(name = "cid")
@@ -37,10 +35,5 @@ public class Pet {
             inverseJoinColumns ={@JoinColumn(name = "tid")})
     private List<Tag> tags;
 
-//    @OneToOne(cascade = CascadeType.ALL)
-//    @JoinColumn(name = "image_id", referencedColumnName = "id")
-//    private PetImages image;
-
     private String status;
-
 }

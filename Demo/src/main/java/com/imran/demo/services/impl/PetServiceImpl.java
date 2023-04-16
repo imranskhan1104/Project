@@ -9,8 +9,8 @@ import com.imran.demo.services.PetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,8 +22,6 @@ public class PetServiceImpl implements PetService {
 
     @Autowired
     private PetImageRepo petImageRepo;
-
-
 
     @Override
     public PetDto getPetByID(Integer petId) {
@@ -75,12 +73,16 @@ public class PetServiceImpl implements PetService {
         this.petImageRepo.save(pet);
     }
 
-//    @Override
-//    public PetDto getPetByStatus(String status) {
-//        User user = this.petRepo.findByStatus(userName);
-//        return this.userToDto(user)
-//    }
-
+    @Override
+    public List<PetDto> getPetByStatus(String status) {
+        List<Pet> petList = this.petRepo.findByStatus(status);
+        List<PetDto> petDtoList = new ArrayList<>();
+        for (Pet pet : petList) {
+            PetDto petDto = this.petToDto(pet);
+            petDtoList.add(petDto);
+        }
+        return petDtoList;
+    }
 
     public Pet dtoToPet(PetDto petDto)
     {
@@ -94,19 +96,6 @@ public class PetServiceImpl implements PetService {
 
         return pet;
     }
-
-//    public PetDto petToDto(Pet pet)
-//    {
-//        PetDto petDto=new PetDto();
-//        petDto.setId(pet.getId());
-//        petDto.setCategory(new Category(pet.getCategory().getCid(),pet.getCategory().getName()));
-//        petDto.setName(pet.getName());
-//        petDto.setPhotoUrls(pet.getPhotoUrls());
-//        petDto.setTags(pet.getTags());
-//        petDto.setStatus(pet.getStatus());
-//
-//        return petDto;
-//    }
 
     public PetDto petToDto(Pet pet) {
         PetDto petDto = new PetDto();

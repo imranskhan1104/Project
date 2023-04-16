@@ -6,7 +6,6 @@ import com.imran.demo.repositories.UserRepo;
 import com.imran.demo.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service
@@ -46,44 +45,54 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean createUserByArray(UserDto[] userDto) {
+        boolean flag = false;
         try {
             for (UserDto a : userDto) {
-                User user = this.dtoToUser(a);
-                this.userRepo.save(user);
+                for (User b : this.userRepo.findAll()) {
+                    if (a.getUserName().equals(b.getUserName())) {
+                        flag = false;
+                        return flag;
+                    }
+                }
             }
-            return true;
+            for (UserDto userList : userDto) {
+                User user = this.dtoToUser(userList);
+                this.userRepo.save(user);
+                flag = true;
+            }
+        } catch (Exception e) {
+            flag = false;
         }
-        catch (Exception e)
-        {
-            return false;
-        }
+        return flag;
     }
 
     @Override
     public boolean createUserByList(List<UserDto> listOfUser) {
+        boolean flag = false;
         try {
             for (UserDto a : listOfUser) {
-                User user = this.dtoToUser(a);
-                this.userRepo.save(user);
+                for (User b : this.userRepo.findAll()) {
+                    if (a.getUserName().equals(b.getUserName())) {
+                        flag = false;
+                        return flag;
+                    }
+                }
             }
-            return true;
+            for (UserDto userList : listOfUser) {
+                User user = this.dtoToUser(userList);
+                this.userRepo.save(user);
+                flag = true;
+            }
+        } catch (Exception e) {
+            flag = false;
         }
-        catch(Exception e)
-        {
-            return false;
-        }
+        return flag;
     }
-
 
     @Override
     public void deleteUser(String userName) {
-
         this.userRepo.deleteByUsername(userName);
     }
-
-
-
-
 
     public User dtoToUser(UserDto userDto) {
         User user = new User();

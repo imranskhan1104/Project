@@ -7,7 +7,6 @@ import com.imran.demo.repositories.StoreRepo;
 import com.imran.demo.services.StoreService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +18,6 @@ public class StoreServiceImpl implements StoreService {
     @Autowired
     private StoreRepo storeRepo;
 
-
     @Override
     public StoreDto placeOrder(StoreDto storeDto) {
         Store store=this.dtoToStore(storeDto);
@@ -29,7 +27,6 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     public void deleteOrder(int orderId) {
-//        Store store=this.storeRepo.findAllById(orderId).o;
         Store store=this.storeRepo.findById(orderId).orElseThrow(()-> new ResourceNotFoundException("Order"," id ",orderId));
         this.storeRepo.delete(store);
     }
@@ -50,9 +47,7 @@ public class StoreServiceImpl implements StoreService {
             statusCountsMap.put(status, countValue);
         }
        return statusCountsMap;
-
     }
-
 
     public Store dtoToStore(StoreDto storeDto)
     {
@@ -73,7 +68,6 @@ public class StoreServiceImpl implements StoreService {
         StoreDto storeDto =new StoreDto();
 
         storeDto.setId(store.getId());
-//        storeDto.setPet(new Store(store.getPet().getId(), store.getCategory().getName()));
         storeDto.setStatus(store.getStatus());
         storeDto.setQuantity(store.getQuantity());
         storeDto.setShipDate(store.getShipDate());

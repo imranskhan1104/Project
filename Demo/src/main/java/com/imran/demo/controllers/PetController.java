@@ -1,30 +1,27 @@
 package com.imran.demo.controllers;
 
 import com.imran.demo.entities.Pet;
-import com.imran.demo.entities.PetImages;
 import com.imran.demo.payloads.PetDto;
-import com.imran.demo.payloads.UserDto;
-import com.imran.demo.repositories.PetImageRepo;
 import com.imran.demo.repositories.PetRepo;
-//import com.imran.demo.repositories.PetStatusEnum;
 import com.imran.demo.response.ApiResponse;
 import com.imran.demo.services.PetService;
-import com.imran.demo.services.UserService;
-import io.swagger.models.auth.In;
+import com.imran.demo.utils.Variable;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
-import java.util.Optional;
+import java.util.List;
 
 
 @RestController
 @RequestMapping("/api/pets")
+@Api(value = "PET", description = "Everything about your Pets")
 public class PetController {
 
     @Autowired
@@ -33,56 +30,126 @@ public class PetController {
     @Autowired
     private PetRepo petRepo;
 
+    @Autowired
+    Variable variable;
+
     @PostMapping("/")
-    public ResponseEntity<PetDto> addPet(@RequestBody PetDto petDto) {
-        PetDto createPetDto = this.petService.addPet(petDto);
-        return new ResponseEntity<>(createPetDto, HttpStatus.CREATED);
+    @ApiOperation(value = "Add a new pet to the store")
+    public ResponseEntity<?> addPet(@ApiParam(name = "Pet Body",value = "Pet object that needs to be added to the store", required = true)
+                                    @RequestBody PetDto petDto) {
+        if (variable.isToken()) {
+            PetDto createPetDto = this.petService.addPet(petDto);
+            return new ResponseEntity<>(createPetDto, HttpStatus.CREATED);
+        } else {
+            return new ResponseEntity<ApiResponse>(new ApiResponse("You are not logged in. Need to Login", false), HttpStatus.BAD_REQUEST);
+        }
     }
 
-
     @GetMapping("/{petId}")
-    public ResponseEntity<PetDto> getPetById(@PathVariable Integer petId) {
-        return ResponseEntity.ok(this.petService.getPetByID(petId));
+    @ApiOperation(value = "Find pet by ID", notes = "Returns a single pet")
+    public ResponseEntity<?> getPetById(@ApiParam(name = "Pet Id",value = "ID of pet to return", required = true)
+                                        @PathVariable Integer petId) {
+        if (variable.isToken()) {
+            for (Pet a : (this.petRepo.findAll())) {
+                if (petId.equals(a.getId())) {
+                    return ResponseEntity.ok(this.petService.getPetByID(petId));
+                }
+            }
+            return new ResponseEntity<ApiResponse>(new ApiResponse("No pet with given pet ID", false), HttpStatus.BAD_REQUEST);
+        } else {
+            return new ResponseEntity<ApiResponse>(new ApiResponse("You are not logged in. Need to Login", false), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PutMapping("/{petId}")
-    public ResponseEntity<PetDto> updatePet(@RequestBody PetDto petDto, @PathVariable("petId") Integer petId) {
-        PetDto updatePet = this.petService.updatePet(petDto, petId);
-        return ResponseEntity.ok(updatePet);
+    @ApiOperation(value = "Update an existing pet")
+    public ResponseEntity<?> updatePet(@ApiParam(name = "Pet Body",value = "Pet object that needs to be added to the store", required = true)
+                                       @RequestBody PetDto petDto,
+                                       @PathVariable("petId") Integer petId) {
+        if (variable.isToken()) {
+            for (Pet a : (this.petRepo.findAll())) {
+                if (petId.equals(a.getId())) {
+                    PetDto updatePet = this.petService.updatePet(petDto, petId);
+                    return ResponseEntity.ok(updatePet);
+                }
+            }
+            return new ResponseEntity<ApiResponse>(new ApiResponse("No pet with given pet ID", false), HttpStatus.BAD_REQUEST);
+
+        } else {
+            return new ResponseEntity<ApiResponse>(new ApiResponse("You are not logged in. Need to Login", false), HttpStatus.BAD_REQUEST);
+        }
     }
 
+    @PutMapping("/{petId}/form-data")
+    @ApiOperation(value = "Update a pet in the store with form data")
+    public ResponseEntity<ApiResponse> updateWithFormData(@ApiParam(name = "Pet Id",value = "ID of pet that needs to be updated", required = true)
+                                                          @PathVariable("petId") Integer petId,
+                                                          @ApiParam(name = "Name",value = "Update name of the pet", required = false)
+                                                          @RequestParam String name,
+                                                          @ApiParam(name = "Status",value = "Update status of the pet", required = false)
+                                                          @RequestParam String status) {
+        if (variable.isToken()) {
+            for (Pet a : (this.petRepo.findAll())) {
+                if (petId.equals(a.getId())) {
+                    this.petService.updateWithFormData(petId, name, status);
+                    return new ResponseEntity<ApiResponse>(new ApiResponse("Pet Updated Successfully", true), HttpStatus.OK);
+                }
+            }
+            return new ResponseEntity<ApiResponse>(new ApiResponse("No pet with given pet ID", false), HttpStatus.BAD_REQUEST);
 
-    @PutMapping("/{petId}/formData")
-    public ResponseEntity<ApiResponse> updateWithFormData(@PathVariable("petId") Integer petId, @RequestParam String name, @RequestParam String status) {
-        this.petService.updateWithFormData(petId, name, status);
-        return new ResponseEntity<ApiResponse>(new ApiResponse("Pet Updated Successfully", true), HttpStatus.OK);    }
+        } else {
+            return new ResponseEntity<ApiResponse>(new ApiResponse("You are not logged in. Need to Login", false), HttpStatus.BAD_REQUEST);
+        }
+    }
 
     @DeleteMapping("/{petId}")
-    public ResponseEntity<ApiResponse> deletePet(@PathVariable("petId") Integer petId)
-    {
-        this.petService.deletePet(petId);
-        return new ResponseEntity<ApiResponse>(new ApiResponse("Pet Deleted Successfully", true), HttpStatus.OK);
+    @ApiOperation(value = "Deletes a pet")
+    public ResponseEntity<ApiResponse> deletePet(@ApiParam(name = "Pet Id",value = "Pet Id to delete", required = true)
+                                                 @PathVariable("petId") Integer petId) {
+        if (variable.isToken()) {
+            for (Pet a : (this.petRepo.findAll())) {
+                if (petId.equals(a.getId())) {
+                    this.petService.deletePet(petId);
+                    return new ResponseEntity<ApiResponse>(new ApiResponse("Pet Deleted Successfully", true), HttpStatus.OK);
+                }
+            }
+            return new ResponseEntity<ApiResponse>(new ApiResponse("No pet with given pet ID", false), HttpStatus.BAD_REQUEST);
+
+        } else {
+            return new ResponseEntity<ApiResponse>(new ApiResponse("You are not logged in. Need to Login", false), HttpStatus.BAD_REQUEST);
+        }
     }
 
+    @RequestMapping(path = "/{petId}/upload-image", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ApiOperation(value = "Uploads an image")
+    public ResponseEntity<ApiResponse> uploadImage(@ApiParam(name = "Pet Id",value = "Id of pet to update", required = true)
+                                                   @PathVariable("petId") Integer petId,
+                                                   @ApiParam(name = "File",value = "File to upload", required = true)
+                                                   @RequestPart("uploadImage") MultipartFile file) throws IOException {
+        if (variable.isToken()) {
+            for (Pet a : (this.petRepo.findAll())) {
+                if (petId.equals(a.getId())) {
+                        this.petService.uploadImage(file, petId);
+                        return new ResponseEntity<ApiResponse>(new ApiResponse("Pet Image Uploaded Successfully", true), HttpStatus.OK);
+                }}
+            return new ResponseEntity<ApiResponse>(new ApiResponse("No pet with given pet ID", false), HttpStatus.BAD_REQUEST);
 
-    @RequestMapping(path = "/{petId}/uploadImage", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponse> uploadImage(@PathVariable("petId") Integer petId, @RequestPart("uploadImage")MultipartFile file) throws IOException {
-    Optional<Pet> pet=this.petRepo.findById(petId);
-
-    if (pet.isPresent()) {
-        this.petService.uploadImage(file, petId);
-        return new ResponseEntity<ApiResponse>(new ApiResponse("Pet Image Uploaded Successfully", true), HttpStatus.OK);
-    }
-    else {
-        return new ResponseEntity<ApiResponse>(new ApiResponse("Failed to upload", false), HttpStatus.BAD_REQUEST);
-    }
+        } else {
+            return new ResponseEntity<ApiResponse>(new ApiResponse("You are not logged in. Need to Login", false), HttpStatus.BAD_REQUEST);
+        }
     }
 
-
-//    @GetMapping("/{status}")
-//    public ResponseEntity<PetDto> getPetByStatus(@PathVariable("status") PetStatusEnum petStatusEnum) {
-//
-//        PetDto getPetbyStatus = this.petService.getPetByStatus(String.valueOf(petStatusEnum));
-//        return ResponseEntity.ok(getPetbyStatus);
+    @GetMapping("/{status}/status")
+    @ApiOperation(value = "Uploads an image",notes="Multiple status values can be provided with comma separated strings")
+    public ResponseEntity<?> getPetByStatus(@ApiParam(name = "Status",value = "Status values that need to be considered for filter",
+                                                            allowableValues = "available,pending,sold")
+                                            @RequestParam("status") String status) {
+        if (variable.isToken()) {
+            List<PetDto> getPetByStatus = this.petService.getPetByStatus(String.valueOf(status));
+            return ResponseEntity.ok(getPetByStatus);
+        } else {
+            return new ResponseEntity<ApiResponse>(new ApiResponse("You are not logged in. Need to Login", false), HttpStatus.BAD_REQUEST);
+        }
     }
-//}
+}
+

@@ -3,7 +3,6 @@ package com.imran.demo.entities;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
@@ -15,7 +14,7 @@ import java.time.LocalDateTime;
 public class Store {
 
     @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
 
     private int petId;
@@ -27,5 +26,4 @@ public class Store {
     private String status;
 
     private boolean complete;
-
 }
