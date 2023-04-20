@@ -1,9 +1,9 @@
 package com.imran.demo.entities;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import javax.persistence.*;
 
 @Entity
@@ -11,6 +11,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Getter
 @Setter
+@JsonPropertyOrder({"id", "username", "firstName", "lastName", "email", "password", "phone", "userStatus"})
 public class User {
 
     @Id

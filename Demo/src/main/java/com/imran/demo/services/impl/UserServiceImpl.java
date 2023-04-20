@@ -1,17 +1,12 @@
 package com.imran.demo.services.impl;
 
 import com.imran.demo.entities.User;
-import com.imran.demo.exception.ResourceNotFoundException;
 import com.imran.demo.payloads.UserDto;
 import com.imran.demo.repositories.UserRepo;
 import com.imran.demo.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -47,22 +42,56 @@ public class UserServiceImpl implements UserService {
         User user = this.userRepo.findByUserName(userName);
         return this.userToDto(user);
     }
-//
-//    @Override
-//    public List<UserDto> getAllUsers() {
-//
-//        List<User> users = this.userRepo.findAll();
-//
-//        List<UserDto> userDtos = users.stream().map(user -> this.userToDto(user)).collect(Collectors.toList());
-//
-//        return userDtos;
-//    }
+
+    @Override
+    public boolean createUserByArray(UserDto[] userDto) {
+        boolean flag = false;
+        try {
+            for (UserDto a : userDto) {
+                for (User b : this.userRepo.findAll()) {
+                    if (a.getUserName().equals(b.getUserName())) {
+                        flag = false;
+                        return flag;
+                    }
+                }
+            }
+            for (UserDto userList : userDto) {
+                User user = this.dtoToUser(userList);
+                this.userRepo.save(user);
+                flag = true;
+            }
+        } catch (Exception e) {
+            flag = false;
+        }
+        return flag;
+    }
+
+    @Override
+    public boolean createUserByList(List<UserDto> listOfUser) {
+        boolean flag = false;
+        try {
+            for (UserDto a : listOfUser) {
+                for (User b : this.userRepo.findAll()) {
+                    if (a.getUserName().equals(b.getUserName())) {
+                        flag = false;
+                        return flag;
+                    }
+                }
+            }
+            for (UserDto userList : listOfUser) {
+                User user = this.dtoToUser(userList);
+                this.userRepo.save(user);
+                flag = true;
+            }
+        } catch (Exception e) {
+            flag = false;
+        }
+        return flag;
+    }
 
     @Override
     public void deleteUser(String userName) {
-
         this.userRepo.deleteByUsername(userName);
-//        this.userRepo.delete(user);
     }
 
     public User dtoToUser(UserDto userDto) {

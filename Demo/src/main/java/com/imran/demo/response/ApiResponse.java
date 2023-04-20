@@ -1,4 +1,4 @@
-package com.imran.demo.payloads;
+package com.imran.demo.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
