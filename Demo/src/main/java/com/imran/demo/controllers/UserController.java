@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
@@ -30,11 +31,16 @@ public class UserController {
     private Variable variable;
 
     @GetMapping("/{userName}")
-    @ApiOperation(value = "Get user bu user name")
-    public ResponseEntity<?> getUserByUserName(@ApiParam(name = "Username",value = "The name that needs to be fetched. Use user1 for testing.")
-                                               @PathVariable("userName") String userName) {
+    @ApiOperation(value = "Get user by user name")
+    public ResponseEntity<?> getUserByUserName(@PathVariable("userName") String userName) {
         if (variable.isToken()) {
-            return ResponseEntity.ok(this.userService.getUserByUserName(userName));
+            Optional<User> user= Optional.ofNullable(this.userRepo.findByUserName(userName));
+            if (user.isPresent()) {
+                return ResponseEntity.ok(this.userService.getUserByUserName(userName));
+            }
+            else {
+                return new ResponseEntity<ApiResponse>(new ApiResponse("User not present", false), HttpStatus.NOT_FOUND);
+            }
         } else {
             return new ResponseEntity<ApiResponse>(new ApiResponse("You are not logged in. Need to Login", false), HttpStatus.BAD_REQUEST);
         }
@@ -42,25 +48,36 @@ public class UserController {
 
     @PutMapping("/{userName}")
     @ApiOperation(value = "Update user",notes = "This can only be done by the logged in user.")
-    public ResponseEntity<?> updateUser(@ApiParam(name ="Username",value = "Name that need to be updated")
-                                        @PathVariable("userName") String userName,
+    public ResponseEntity<?> updateUser(@RequestParam("userName") String userName,
                                         @ApiParam(name = "User Body", value = "Updated user object")
                                         @RequestBody UserDto userDto) {
         if (variable.isToken()) {
-            UserDto updateuser = this.userService.updateUser(userDto, userName);
-            return ResponseEntity.ok(updateuser);
+            Optional<User> user= Optional.ofNullable(this.userRepo.findByUserName(userName));
+            if (user.isPresent()) {
+                UserDto updateuser = this.userService.updateUser(userDto, userName);
+                return ResponseEntity.ok(updateuser);
+            }
+            else {
+                return new ResponseEntity<ApiResponse>(new ApiResponse("User not present", false), HttpStatus.NOT_FOUND);
+            }
         } else {
             return new ResponseEntity<ApiResponse>(new ApiResponse("You are not logged in. Need to Login", false), HttpStatus.BAD_REQUEST);
         }
     }
 
-    @DeleteMapping("/{userName}")
+    @DeleteMapping(value = "/{userName}")
     @ApiOperation(value = "Delete user",notes ="This can only be done by the logged in user." )
-    public ResponseEntity<ApiResponse> deleteUser(@ApiParam(name = "Username",value = "The name that needs to be deleted")
-                                                  @PathVariable("userName") String userName) {
+    public ResponseEntity<ApiResponse> deleteUser(@PathVariable String userName) {
         if (variable.isToken()) {
+            Optional<User> user= Optional.ofNullable(this.userRepo.findByUserName(userName));
+            if (user.isPresent())
+            {
             this.userService.deleteUser(userName);
             return new ResponseEntity<ApiResponse>(new ApiResponse("User Deleted Successfully", true), HttpStatus.OK);
+            }
+            else{
+                return new ResponseEntity<ApiResponse>(new ApiResponse("User not present", false), HttpStatus.NOT_FOUND);
+            }
         } else {
             return new ResponseEntity<ApiResponse>(new ApiResponse("You are not logged in. Need to Login", false), HttpStatus.BAD_REQUEST);
         }
@@ -95,7 +112,7 @@ public class UserController {
             if (created) {
                 return new ResponseEntity<ApiResponse>(new ApiResponse("Users created Successfully", true), HttpStatus.OK);
             } else {
-                return new ResponseEntity<ApiResponse>(new ApiResponse("Wrong List Format", true), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<ApiResponse>(new ApiResponse("Input data has some User's already present", true), HttpStatus.BAD_REQUEST);
 
             }
         } else {
@@ -112,19 +129,19 @@ public class UserController {
             if (created) {
                 return new ResponseEntity<ApiResponse>(new ApiResponse("Users created Successfully", true), HttpStatus.OK);
             } else {
-                return new ResponseEntity<ApiResponse>(new ApiResponse("Wrong List Format", true), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<ApiResponse>(new ApiResponse("Input data has some User's already present", false), HttpStatus.BAD_REQUEST);
             }
         } else {
             return new ResponseEntity<ApiResponse>(new ApiResponse("You are not logged in. Need to Login", false), HttpStatus.BAD_REQUEST);
         }
     }
 
-    @GetMapping("/login/{userName}/{password}")
+    @GetMapping("/login/")
     @ApiOperation(value = "Logs user into the system")
-    public ResponseEntity<ApiResponse> login(@ApiParam(name = "Username",value = "The user name for login")
-                                             @PathVariable("userName") String userName,
-                                             @ApiParam(name = "Password", value = "The password for login in clear text")
-                                             @PathVariable("password") String password) {
+    public ResponseEntity<ApiResponse> login(@ApiParam(name = "userName",value = "The user name for login")
+                                             @RequestParam(required = true)  String userName,
+                                             @ApiParam(name = "password", value = "The password for login in clear text")
+                                             @RequestParam(required = true) String password) {
         User user = this.userRepo.findByUserName(userName);
         if (user == null || user.getUserName() == null || !user.getUserName().equals(userName)) {
             return new ResponseEntity<ApiResponse>(new ApiResponse("No user found with the provided username", false), HttpStatus.BAD_REQUEST);

@@ -1,8 +1,11 @@
 package com.imran.demo.controllers;
 
 import com.imran.demo.entities.Pet;
+import com.imran.demo.entities.Store;
+import com.imran.demo.entities.User;
 import com.imran.demo.payloads.StoreDto;
 import com.imran.demo.repositories.PetRepo;
+import com.imran.demo.repositories.StoreRepo;
 import com.imran.demo.response.ApiResponse;
 import com.imran.demo.services.StoreService;
 import com.imran.demo.utils.Variable;
@@ -25,6 +28,9 @@ public class StoreController {
 
     @Autowired
     private PetRepo petRepo;
+
+    @Autowired
+    private StoreRepo storeRepo;
 
     @Autowired
     Variable variable;
@@ -51,23 +57,32 @@ public class StoreController {
 
     @DeleteMapping("/{orderId}")
     @ApiOperation(value = "Delete purchase order by Id", notes = "For valid response try integer IDs with positive integer value. Negative or non-integer values will generate API errors")
-    public ResponseEntity<ApiResponse> deleteOrder(@ApiParam(name = "Order Id",value = "ID of the order that needs to be deleted")
-                                                   @PathVariable("orderId") Integer orderId)
+    public ResponseEntity<ApiResponse> deleteOrder(@PathVariable("orderId") Integer orderId)
     {
         if (variable.isToken()) {
-            this.storeService.deleteOrder(orderId);
+            Optional<Store> store= this.storeRepo.findById(orderId);
+            if (store.isPresent()) {
+                this.storeService.deleteOrder(orderId);
+            }
+            else{
+                return new ResponseEntity<ApiResponse>(new ApiResponse("No order with respect to given ID", false), HttpStatus.NOT_FOUND);
+            }
             return new ResponseEntity<ApiResponse>(new ApiResponse("Order Deleted Successfully", true), HttpStatus.OK);
         }
         return new ResponseEntity<ApiResponse>(new ApiResponse("You are not logged in. Need to Login", false), HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping("/{orderId}")
-    @ApiOperation(value = "Find purchase order bu Id")
-    public ResponseEntity<?> findOrderById(@ApiParam(name = "Order Id", value = "ID of pet that needs to be fetched")
-                                           @PathVariable("orderId")Integer orderId)
+    @ApiOperation(value = "Find purchase order by Id")
+    public ResponseEntity<?> findOrderById(@PathVariable("orderId")Integer orderId)
     {
         if (variable.isToken()) {
-            return ResponseEntity.ok(this.storeService.findOrderById(orderId));
+            Optional<Store> store= this.storeRepo.findById(orderId);
+            if (store.isPresent()) {
+                return ResponseEntity.ok(this.storeService.findOrderById(orderId));
+            }else {
+                return new ResponseEntity<ApiResponse>(new ApiResponse("No order with respect to given ID", false), HttpStatus.NOT_FOUND);
+            }
         }
         else {
             return new ResponseEntity<ApiResponse>(new ApiResponse("You are not logged in. Need to Login", false), HttpStatus.BAD_REQUEST);

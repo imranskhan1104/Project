@@ -6,9 +6,7 @@ import com.imran.demo.repositories.PetRepo;
 import com.imran.demo.response.ApiResponse;
 import com.imran.demo.services.PetService;
 import com.imran.demo.utils.Variable;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -47,8 +45,7 @@ public class PetController {
 
     @GetMapping("/{petId}")
     @ApiOperation(value = "Find pet by ID", notes = "Returns a single pet")
-    public ResponseEntity<?> getPetById(@ApiParam(name = "Pet Id",value = "ID of pet to return", required = true)
-                                        @PathVariable Integer petId) {
+    public ResponseEntity<?> getPetById(@ApiParam(name = "petId",value = "ID of pet to return", required = true) Integer petId) {
         if (variable.isToken()) {
             for (Pet a : (this.petRepo.findAll())) {
                 if (petId.equals(a.getId())) {
@@ -80,17 +77,21 @@ public class PetController {
         }
     }
 
-    @PutMapping("/{petId}/form-data")
+    @PutMapping("/form-data")
     @ApiOperation(value = "Update a pet in the store with form data")
-    public ResponseEntity<ApiResponse> updateWithFormData(@ApiParam(name = "Pet Id",value = "ID of pet that needs to be updated", required = true)
-                                                          @PathVariable("petId") Integer petId,
-                                                          @ApiParam(name = "Name",value = "Update name of the pet", required = false)
-                                                          @RequestParam String name,
-                                                          @ApiParam(name = "Status",value = "Update status of the pet", required = false)
-                                                          @RequestParam String status) {
+    public ResponseEntity<ApiResponse> updateWithFormData(@RequestParam(name = "PetId") Integer petId,
+                                                          @RequestParam(name = "Name", required = false) String name,
+                                                          @RequestParam(name = "Status", required = false) String status) {
         if (variable.isToken()) {
             for (Pet a : (this.petRepo.findAll())) {
                 if (petId.equals(a.getId())) {
+                    Pet pet=this.petRepo.findById(petId).get();
+                    if (name == null) {
+                        name=pet.getName();
+                    }
+                    if (status == null) {
+                        status=pet.getStatus();
+                    }
                     this.petService.updateWithFormData(petId, name, status);
                     return new ResponseEntity<ApiResponse>(new ApiResponse("Pet Updated Successfully", true), HttpStatus.OK);
                 }
@@ -104,8 +105,7 @@ public class PetController {
 
     @DeleteMapping("/{petId}")
     @ApiOperation(value = "Deletes a pet")
-    public ResponseEntity<ApiResponse> deletePet(@ApiParam(name = "Pet Id",value = "Pet Id to delete", required = true)
-                                                 @PathVariable("petId") Integer petId) {
+    public ResponseEntity<ApiResponse> deletePet(@RequestParam(name = "Pet Id") Integer petId) {
         if (variable.isToken()) {
             for (Pet a : (this.petRepo.findAll())) {
                 if (petId.equals(a.getId())) {
@@ -122,10 +122,8 @@ public class PetController {
 
     @RequestMapping(path = "/{petId}/upload-image", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ApiOperation(value = "Uploads an image")
-    public ResponseEntity<ApiResponse> uploadImage(@ApiParam(name = "Pet Id",value = "Id of pet to update", required = true)
-                                                   @PathVariable("petId") Integer petId,
-                                                   @ApiParam(name = "File",value = "File to upload", required = true)
-                                                   @RequestPart("uploadImage") MultipartFile file) throws IOException {
+    public ResponseEntity<ApiResponse> uploadImage(@RequestParam(name = "petId") Integer petId,
+                                                   @RequestPart(name = "uploadImage") MultipartFile file) throws IOException {
         if (variable.isToken()) {
             for (Pet a : (this.petRepo.findAll())) {
                 if (petId.equals(a.getId())) {
@@ -140,10 +138,9 @@ public class PetController {
     }
 
     @GetMapping("/{status}/status")
-    @ApiOperation(value = "Uploads an image",notes="Multiple status values can be provided with comma separated strings")
-    public ResponseEntity<?> getPetByStatus(@ApiParam(name = "Status",value = "Status values that need to be considered for filter",
-                                                            allowableValues = "available,pending,sold")
-                                            @RequestParam("status") String status) {
+    @ApiOperation(value = "Find Pets by Status",notes="Multiple status values can be provided with comma separated strings")
+    public ResponseEntity<?> getPetByStatus(@ApiParam(name = "status",value = "Status values that need to be considered for filter",
+                                                            allowableValues = "available,pending,sold") String status) {
         if (variable.isToken()) {
             List<PetDto> getPetByStatus = this.petService.getPetByStatus(String.valueOf(status));
             return ResponseEntity.ok(getPetByStatus);
